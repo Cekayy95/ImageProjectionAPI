@@ -50,10 +50,30 @@ app.MapPost("/processImage", ([FromBody] ImageInput processImageInput) =>
 .WithName("processImage")
 .WithOpenApi();
 
+app.MapPost("/processImageBrightness", ([FromBody] ImageInputBrightness processImageInput) =>
+    {
+        byte[] imageData = Convert.FromBase64String(processImageInput.ImageData);
+
+        Image imag = Image.Load(imageData);
+        imag.Mutate(x => x.Brightness(float.Parse(processImageInput.BrightnessFactor, CultureInfo.InvariantCulture)));
+
+        string result = imag.ToBase64String(PngFormat.Instance).Replace("data:image/png;base64,", "");
+        return result;
+    })
+    .WithName("processImageBrightness")
+    .WithOpenApi();
+
+
 app.Run();
 
 public class ImageInput
 {
     public string ImageData { get; set; }
     public string TransformMatrix { get; set; }
+}
+
+public class ImageInputBrightness
+{
+    public string ImageData { get; set; }
+    public string BrightnessFactor { get; set; }
 }
